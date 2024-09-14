@@ -2,8 +2,11 @@ import { DataTable } from "./DataTable";
 import { FeedbackData } from "../hooks";
 
 export function FeedbackDataTable({ data }: { data: FeedbackData }) {
+  console.log("data in FeedbackDataTable", data);
+
   return (
     <DataTable
+      key={JSON.stringify(data)}
       fullWidth
       data={data}
       schema={[

@@ -1,19 +1,29 @@
 import { FeedbackDataTable } from "./components/FeedbackDataTable";
 import { useFeedbackQuery } from "./hooks";
+import { filterObject } from "./App";
+import { useEffect } from "react";
 
 type Props = {
-  filters?: unknown;
+  filterObjectArray: filterObject[];
 };
 
-export function Feedback({ filters }: Props) {
-  const dataReq = useFeedbackQuery({
-    _: "Update this object to pass data to the /query endpoint.",
-    filters,
+export function Feedback({ filterObjectArray }: Props) {
+  const { data: feedbackData, isLoading } = useFeedbackQuery({
+    filterObjectArray,
   });
 
-  if (dataReq.isLoading) {
+  console.log("filterObjectArray in Feedback.tsx on change", filterObjectArray);
+  console.log("feedbackData Feedback.tsx on change:", feedbackData?.data);
+
+  useEffect(() => {
+    console.log("feedbackData Feedback.tsx useEffect:", feedbackData?.data);
+  }, [feedbackData]);
+
+  if (isLoading) {
     return <div>Loading...</div>;
   }
 
-  return <FeedbackDataTable data={dataReq.data!.data} />;
+  return feedbackData?.data ? (
+    <FeedbackDataTable data={feedbackData.data} />
+  ) : null;
 }

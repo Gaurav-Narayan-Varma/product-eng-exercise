@@ -18,6 +18,9 @@ export type FeedbackGroup = {
 };
 
 export function useFeedbackQuery(query: unknown) {
+  console.log("hook triggered");
+  console.log("query in hook", query);
+
   return useQuery<{ data: FeedbackData }>({
     queryFn: async () => {
       const res = await fetch("http://localhost:5001/query", {
@@ -32,7 +35,7 @@ export function useFeedbackQuery(query: unknown) {
     },
     // The query key is used to cache responses and should represent
     // the parameters of the query.
-    queryKey: ["query-data"],
+    queryKey: [query],
   });
 }
 

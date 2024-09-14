@@ -14,6 +14,12 @@ type Feedback = {
 
 type FeedbackData = Feedback[];
 
+type filterObject = {
+  label?: string;
+  selections: string[];
+  index: number;
+};
+
 export const router = express.Router();
 router.use(bodyParser.json());
 
@@ -23,13 +29,50 @@ router.post("/groups", groupHandler);
 const feedback: FeedbackData = json as any;
 
 function queryHandler(req: Request, res: Response<{ data: FeedbackData }>) {
-  const body = req;
+  const { query } = req.body;
+  const filterObjectArray = query.filterObjectArray;
 
-  /**
-   * TODO(part-1): Implement query handling
-   */
+  console.log(
+    "filterObjectArray in endpoint before validation",
+    filterObjectArray
+  );
 
-  res.status(200).json({ data: feedback });
+  const validFilters = filterObjectArray.filter(
+    (filterObject: filterObject) => {
+      return filterObject.label !== undefined && filterObject.label !== "";
+    }
+  );
+
+  console.log("filterObjectArray in endpoint", filterObjectArray);
+
+  let filteredFeedback = feedback;
+
+  if (validFilters && validFilters.length > 0) {
+    filteredFeedback = feedback.filter((item) => {
+      return validFilters.every((filterObject: filterObject) => {
+        if (filterObject.label === "Importance") {
+          return filterObject.selections.includes(item.importance);
+        } else if (filterObject.label === "Type") {
+          return filterObject.selections.includes(item.type);
+        } else if (filterObject.label === "Customer") {
+          return filterObject.selections.includes(item.customer);
+        } else if (filterObject.label === "Content") {
+          return filterObject.selections.some((content) =>
+            item.description.toLowerCase().includes(content.toLowerCase())
+          );
+        } else if (filterObject.label === "Created date") {
+          // Implement date filtering logic here
+          // For simplicity, we'll just return true for now
+          return true;
+        }
+        return true;
+      });
+    });
+  }
+
+  console.log("filteredFeedback", filteredFeedback);
+
+  res.status(200).json({ data: filteredFeedback });
 }
 
 type FeedbackGroup = {

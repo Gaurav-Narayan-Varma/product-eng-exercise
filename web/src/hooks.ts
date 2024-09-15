@@ -54,6 +54,6 @@ export function useGroupsQuery(query: unknown) {
     },
     // The query key is used to cache responses and should represent
     // the parameters of the query.
-    queryKey: ["groups-data"],
+    queryKey: [query],
   });
 }

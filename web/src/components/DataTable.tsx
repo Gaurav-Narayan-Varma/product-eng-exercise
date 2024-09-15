@@ -59,11 +59,14 @@ export function DataTable<RowType>({
   });
 
   return (
-    <div className="hide-scroll-bar h-full overflow-hidden overflow-y-auto rounded-lg border bg-white">
+    <div className="hide-scroll-bar h-full overflow-hidden overflow-y-auto rounded-lg border-[0.5px] border-gray-200 bg-white">
       <table className={cx({ "w-full": fullWidth }, className, " bg-white")}>
-        <thead className="border-b">
+        <thead className="border-b-[0.5px] border-gray-200">
           {table.getHeaderGroups().map((headerGroup) => (
-            <tr key={headerGroup.id}>
+            <tr
+              key={headerGroup.id}
+              className="sticky top-0 border-b-[0.5px] bg-gray-200"
+            >
               {headerGroup.headers.map((header) => (
                 <th
                   key={header.id}
@@ -97,7 +100,7 @@ export function DataTable<RowType>({
           {table.getRowModel().rows.map((row) => (
             <tr
               key={row.id}
-              className="hover:cursor-default hover:bg-gray-100"
+              className="hover:cursor-default border-t-[0.5px] border-b-[0.5px] border-gray-200 hover:bg-gray-100"
               onMouseDown={(e) => e.button === 0 && onRowClick?.(row.original)}
               style={{ height: 64 }}
             >

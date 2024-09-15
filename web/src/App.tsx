@@ -16,7 +16,7 @@ export const TabsConfig: TabConfig = {
 };
 
 export type filterObject = {
-  label?: string;
+  label?: string | null;
   selections: string[];
   index: number;
 };
@@ -51,9 +51,10 @@ function App() {
           setFilterObjectArray={setFilterObjectArray}
         />
         {selectedTab === "feedback" ? (
+          // TODO: pass filteObjectArray as filter
           <Feedback filterObjectArray={filterObjectArray} />
         ) : (
-          <Groups filters={{}} />
+          <Groups filterObjectArray={filterObjectArray} />
         )}
       </div>
     </div>

@@ -44,15 +44,27 @@ const dropdownItems: Record<string, DropdownItem> = {
 interface Props {
   dropdownRef: React.RefObject<HTMLDivElement>;
   isOpen: boolean;
+  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsDatePickerOpen: React.Dispatch<React.SetStateAction<boolean>>;
   selectedLabel: string | null;
   setSelectedLabel: React.Dispatch<React.SetStateAction<string | null>>;
   filterObjectArray: filterObject[];
   setFilterObjectArray: React.Dispatch<React.SetStateAction<filterObject[]>>;
 }
 
-//   MUST: Refactor to own component and then use again in FilterMenu
+// TODO: Show issues grayed out to the right of the selection
+// TODO: Have the dropdown menu track the filter icon when opened
+// TODO: Create NOT statement for filter
+// TODO: Refactor to own component and then use again in FilterMenu
+// TODO: Add clear button to clear filters
+// TODO: Pressing escape should close dropdown
+// TODO: Down arrow should focus next item (and vice versa)
 export const FilterMenuDropdown = ({
   isOpen,
+  setIsOpen,
+  setIsDialogOpen,
+  setIsDatePickerOpen,
   dropdownRef,
   selectedLabel,
   setSelectedLabel,
@@ -62,8 +74,8 @@ export const FilterMenuDropdown = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Focus on the input when the dropdown is open
   //   TODO: Potentially optimize useEffect and handlers by bringing them up to FilterMenu
+  // Focus on the input when the dropdown is open
   useEffect(() => {
     if (isOpen && inputRef.current) {
       inputRef.current.focus();
@@ -76,8 +88,6 @@ export const FilterMenuDropdown = ({
     }
   }, [isOpen]);
 
-  if (!isOpen) return null;
-
   const handleLabelClick = (label: string) => {
     setSelectedLabel(label);
     setSearchTerm("");
@@ -86,19 +96,53 @@ export const FilterMenuDropdown = ({
     }
   };
 
+  // TODO: Rename to handleSelectionChange
   const handleCheckboxChange = (selection: string) => {
     if (!selectedLabel) return;
 
-    console.log("selection in handleCheckboxChange", selection);
+    // If the label selected is created date then set the selection on the current object, close the dropdown, and create the next filter object
+    if (
+      selectedLabel === "Created date" &&
+      selection !== "Custom date or timeframe..."
+    ) {
+      setFilterObjectArray((prev) => {
+        const currentFilterObject = prev[prev.length - 1];
+        return [
+          ...prev.slice(0, -1),
+          {
+            ...currentFilterObject,
+            label: selectedLabel,
+            selections: [selection],
+          },
+          {
+            selections: [],
+            index: prev.length === 0 ? 0 : prev[prev.length - 1].index + 1,
+          },
+        ];
+      });
+      setIsOpen(false);
+
+      return;
+    }
+
+    if (selection === "Custom date or timeframe...") {
+      setIsOpen(false);
+      setIsDatePickerOpen(true);
+      return;
+    }
 
     setFilterObjectArray((prev) => {
-      const lastItem = prev[prev.length - 1];
+      const currentFilterObject = prev[prev.length - 1];
+      const alreadySelected =
+        currentFilterObject.selections.includes(selection);
       return [
         ...prev.slice(0, -1),
         {
-          ...lastItem,
+          ...currentFilterObject,
           label: selectedLabel,
-          selections: [...lastItem.selections, selection],
+          selections: alreadySelected
+            ? currentFilterObject.selections.filter((s) => s !== selection)
+            : [...currentFilterObject.selections, selection],
         },
       ];
     });
@@ -121,24 +165,31 @@ export const FilterMenuDropdown = ({
         )
       : [];
 
+  if (!isOpen) return null;
+
   return (
     <div
       ref={dropdownRef}
       //   TODO: Add transition to top
       className={`absolute top-0 ${
         selectedLabel && "top-7"
-      } left-0 w-[240px] bg-white border border-gray-200 rounded-lg shadow-lg z-50`}
+      } left-0 w-[240px] bg-white border-[0.5px] border-gray-200 rounded-lg shadow-lg z-50`}
     >
       {/* TODO: Make Input Area Larger (so the cursor should flip to line over larger area)/ Mimic Linear */}
       {/* TODO: if user enters text which does not match anything fix UI so it looks like Linear */}
-      <input
-        ref={inputRef}
-        type="text"
-        placeholder={selectedLabel ? `${selectedLabel}` : "Filter..."}
-        className="mt-[10px] mb-[9px] mx-[14px] h-[17px] w-[183px] focus:outline-none text-[13px]"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-      />
+      <div className="flex">
+        <input
+          ref={inputRef}
+          type="text"
+          placeholder={selectedLabel ? `${selectedLabel}` : "Filter..."}
+          className="mt-[10px] mb-[9px] mx-[14px] h-[17px] w-[183px] focus:outline-none text-[13px]"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <div className="flex items-center justify-center border-[0.5px] border-gray-400 rounded-sm font-medium text-[11px] w-3 h-3 p-2 mr-3 self-center text-gray-400">
+          F
+        </div>
+      </div>
       <hr className="pb-[5px]" />
       <section className="px-1 pb-1">
         {selectedLabel
@@ -168,7 +219,14 @@ export const FilterMenuDropdown = ({
               <div
                 key={label}
                 className="hover:bg-gray-100 rounded-md hover:cursor-default px-[10px] h-8 flex items-center text-[13px]"
-                onClick={() => handleLabelClick(label)}
+                onClick={() => {
+                  if (label === "Content") {
+                    setIsOpen(false);
+                    setIsDialogOpen(true);
+                  } else {
+                    handleLabelClick(label);
+                  }
+                }}
               >
                 <Details.Icon className="mr-2 h-4 w-4" />
                 {label}

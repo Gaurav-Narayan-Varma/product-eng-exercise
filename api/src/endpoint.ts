@@ -20,6 +20,14 @@ type filterObject = {
   index: number;
 };
 
+const daysMapping: Record<string, number> = {
+  "1 day ago": 1,
+  "3 days ago": 3,
+  "1 week ago": 7,
+  "1 month ago": 30,
+  "3 months ago": 90,
+};
+
 export const router = express.Router();
 router.use(bodyParser.json());
 
@@ -57,13 +65,23 @@ function queryHandler(req: Request, res: Response<{ data: FeedbackData }>) {
         } else if (filterObject.label === "Customer") {
           return filterObject.selections.includes(item.customer);
         } else if (filterObject.label === "Content") {
-          return filterObject.selections.some((content) =>
-            item.description.toLowerCase().includes(content.toLowerCase())
+          return filterObject.selections.some(
+            (content) =>
+              item.description.toLowerCase().includes(content.toLowerCase()) ||
+              item.name.toLowerCase().includes(content.toLowerCase())
           );
         } else if (filterObject.label === "Created date") {
-          // Implement date filtering logic here
-          // For simplicity, we'll just return true for now
-          return true;
+          let dateLimit: Date;
+
+          if (!daysMapping.hasOwnProperty(filterObject.selections[0])) {
+            dateLimit = new Date(filterObject.selections[0]);
+          } else {
+            const now = new Date();
+            const daysAgo = daysMapping[filterObject.selections[0]];
+            dateLimit = new Date(now.setDate(now.getDate() - daysAgo));
+          }
+
+          return new Date(item.date) >= dateLimit;
         }
         return true;
       });
@@ -90,22 +108,11 @@ async function groupHandler(
    * TODO(part-2): Implement filtering + grouping
    */
 
-  const pythonRes = await fetch("http://127.0.0.1:8000/", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
-    body: JSON.stringify({ feedback }),
-  });
-
-  const pythonData = (await pythonRes.json()) as { feedback: Feedback[] };
-
   res.status(200).json({
     data: [
       {
         name: "All feedback",
-        feedback: pythonData.feedback,
+        feedback: feedback,
       },
     ],
   });

@@ -1,7 +1,8 @@
 {
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "rootDir": "src",
+    "typeRoots": ["../../shared/**/*.ts"],
+    "rootDir": "../../",
     "outDir": "dist",
     "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo",
     "paths": {
@@ -29,7 +30,12 @@
       }
     ]
   },
-  "include": ["src/*.ts", "src/data.json"],
+  "include": [
+    "src/*.ts",
+    "src/data.json",
+    "src/aiService.ts",
+    "../shared/**/*.ts"
+  ],
   "ts-node": {
     "require": ["tsconfig-paths/register"]
   }

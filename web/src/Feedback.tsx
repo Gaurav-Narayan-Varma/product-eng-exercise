@@ -1,22 +1,22 @@
 import { FeedbackDataTable } from "./components/FeedbackDataTable";
 import { useFeedbackQuery } from "./hooks";
-import { filterObject } from "./App";
+import { filterObjectArray } from "../../shared/types";
 import { useEffect } from "react";
 
 type Props = {
-  filterObjectArray: filterObject[];
+  filterObjectArray: filterObjectArray;
+  setResultsCount: React.Dispatch<React.SetStateAction<number | null>>;
 };
 
-export function Feedback({ filterObjectArray }: Props) {
+export function Feedback({ filterObjectArray, setResultsCount }: Props) {
   const { data: feedbackData, isLoading } = useFeedbackQuery({
     filterObjectArray,
   });
 
-  console.log("filterObjectArray in Feedback.tsx on change", filterObjectArray);
-  console.log("feedbackData Feedback.tsx on change:", feedbackData?.data);
-
   useEffect(() => {
-    console.log("feedbackData Feedback.tsx useEffect:", feedbackData?.data);
+    if (feedbackData) {
+      setResultsCount(feedbackData.data.length);
+    }
   }, [feedbackData]);
 
   if (isLoading) {

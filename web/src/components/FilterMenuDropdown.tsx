@@ -5,14 +5,16 @@ import { HiOutlineUser } from "react-icons/hi";
 import { PiTextTBold } from "react-icons/pi";
 import { HiCalendar } from "react-icons/hi2";
 import { IconType } from "react-icons";
-import { filterObject } from "../App";
+import { filterObjectArray } from "../../shared/types";
 
-type DropdownItem = {
-  Icon: IconType;
-  selections?: string[];
+type DropdownItems = {
+  string: {
+    Icon: IconType;
+    selections?: string[];
+  };
 };
 
-const dropdownItems: Record<string, DropdownItem> = {
+const dropdownItems: DropdownItems = {
   Importance: {
     Icon: HiOutlineExclamationCircle,
     selections: ["Low", "Medium", "High"],
@@ -21,13 +23,11 @@ const dropdownItems: Record<string, DropdownItem> = {
     Icon: HiOutlineCube,
     selections: ["Research", "Sales", "Customer"],
   },
-  // TODO: Fetch customers from backend instead of hardcoding
   Customer: {
     Icon: HiOutlineUser,
     selections: ["Loom", "Ramp", "Brex", "Vanta", "Notion", "OpenAI", "Linear"],
   },
   Content: { Icon: PiTextTBold },
-  //   NOTE: Linear has partially dynamic selection i.e. it will remove selections if none of the tickets match the selection, but won't create new selections for tickets which go out of bounds
   "Created date": {
     Icon: HiCalendar,
     selections: [
@@ -42,51 +42,49 @@ const dropdownItems: Record<string, DropdownItem> = {
 };
 
 interface Props {
-  dropdownRef: React.RefObject<HTMLDivElement>;
-  isOpen: boolean;
-  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  setIsDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  filterMenuDropdownRef: React.RefObject<HTMLDivElement>;
+  isDropdownOpen: boolean;
+  setIsDropdownOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsContentFilterOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setIsDatePickerOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  selectedLabel: string | null;
-  setSelectedLabel: React.Dispatch<React.SetStateAction<string | null>>;
-  filterObjectArray: filterObject[];
-  setFilterObjectArray: React.Dispatch<React.SetStateAction<filterObject[]>>;
+  filterObjectArray: filterObjectArray;
+  setFilterObjectArray: React.Dispatch<React.SetStateAction<filterObjectArray>>;
+  isLast: boolean;
+  pillNumber: number | null;
+  selectedLabel: string;
+  setSelectedLabel: React.Dispatch<React.SetStateAction<string>>;
 }
 
-// TODO: Show issues grayed out to the right of the selection
-// TODO: Have the dropdown menu track the filter icon when opened
-// TODO: Create NOT statement for filter
-// TODO: Refactor to own component and then use again in FilterMenu
-// TODO: Add clear button to clear filters
-// TODO: Pressing escape should close dropdown
-// TODO: Down arrow should focus next item (and vice versa)
 export const FilterMenuDropdown = ({
-  isOpen,
-  setIsOpen,
-  setIsDialogOpen,
+  isDropdownOpen,
+  setIsDropdownOpen,
+  setIsContentFilterOpen,
   setIsDatePickerOpen,
-  dropdownRef,
-  selectedLabel,
-  setSelectedLabel,
+  filterMenuDropdownRef,
   filterObjectArray,
   setFilterObjectArray,
+  isLast,
+  pillNumber,
+  selectedLabel,
+  setSelectedLabel,
 }: Props) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isVisible, setIsVisible] = useState(false);
 
-  //   TODO: Potentially optimize useEffect and handlers by bringing them up to FilterMenu
-  // Focus on the input when the dropdown is open
   useEffect(() => {
-    if (isOpen && inputRef.current) {
-      inputRef.current.focus();
-    }
-
-    // Reset the dropdown when it is closed
-    if (!isOpen) {
+    // When dropdown opens, focus on input
+    if (isDropdownOpen) {
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+      setIsVisible(true);
+    } else {
+      setIsVisible(false);
       setSelectedLabel(null);
       setSearchTerm("");
     }
-  }, [isOpen]);
+  }, [isDropdownOpen]);
 
   const handleLabelClick = (label: string) => {
     setSelectedLabel(label);
@@ -96,11 +94,9 @@ export const FilterMenuDropdown = ({
     }
   };
 
-  // TODO: Rename to handleSelectionChange
-  const handleCheckboxChange = (selection: string) => {
+  const handleSelectionChange = (selection: string) => {
     if (!selectedLabel) return;
 
-    // If the label selected is created date then set the selection on the current object, close the dropdown, and create the next filter object
     if (
       selectedLabel === "Created date" &&
       selection !== "Custom date or timeframe..."
@@ -120,13 +116,13 @@ export const FilterMenuDropdown = ({
           },
         ];
       });
-      setIsOpen(false);
+      setIsDropdownOpen(false);
 
       return;
     }
 
     if (selection === "Custom date or timeframe...") {
-      setIsOpen(false);
+      setIsDropdownOpen(false);
       setIsDatePickerOpen(true);
       return;
     }
@@ -165,18 +161,31 @@ export const FilterMenuDropdown = ({
         )
       : [];
 
-  if (!isOpen) return null;
+  if (!isDropdownOpen) {
+    return null;
+  }
+
+  // If in selection mode then attach to last pill
+  if (filterObjectArray.at(-1).selections.length > 0 && !isLast) {
+    return null;
+  }
+
+  // If not in selection mode then attach to funnel
+  if (filterObjectArray.at(-1).selections.length === 0 && pillNumber + 1 > 0) {
+    return null;
+  }
 
   return (
     <div
-      ref={dropdownRef}
-      //   TODO: Add transition to top
+      ref={filterMenuDropdownRef}
       className={`absolute top-0 ${
         selectedLabel && "top-7"
-      } left-0 w-[240px] bg-white border-[0.5px] border-gray-200 rounded-lg shadow-lg z-50`}
+      } left-0 w-[240px] bg-white border-[0.5px] border-gray-200 rounded-lg shadow-lg z-50 transition-all duration-300 ease-in-out ${
+        isVisible
+          ? "opacity-100 transform translate-y-0"
+          : "opacity-0 transform -translate-y-2"
+      }`}
     >
-      {/* TODO: Make Input Area Larger (so the cursor should flip to line over larger area)/ Mimic Linear */}
-      {/* TODO: if user enters text which does not match anything fix UI so it looks like Linear */}
       <div className="flex">
         <input
           ref={inputRef}
@@ -197,7 +206,7 @@ export const FilterMenuDropdown = ({
               <div
                 key={selection}
                 className="hover:bg-gray-100 rounded-md px-[10px] h-8 flex items-center text-[13px] hover:cursor-default"
-                onClick={() => handleCheckboxChange(selection)}
+                onClick={() => handleSelectionChange(selection)}
               >
                 {["Importance", "Type", "Customer"].includes(selectedLabel) && (
                   <input
@@ -221,8 +230,8 @@ export const FilterMenuDropdown = ({
                 className="hover:bg-gray-100 rounded-md hover:cursor-default px-[10px] h-8 flex items-center text-[13px]"
                 onClick={() => {
                   if (label === "Content") {
-                    setIsOpen(false);
-                    setIsDialogOpen(true);
+                    setIsDropdownOpen(false);
+                    setIsContentFilterOpen(true);
                   } else {
                     handleLabelClick(label);
                   }

@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { NavTabs, TabConfig } from "./components/NavTabs";
 import { Feedback } from "./Feedback";
 import { Groups } from "./Groups";
-import { FilterMenu } from "./components/FilterMenu";
+import { FilterMenu } from "./FilterMenu";
+import { filterObjectArray } from "../../shared/types";
 
 export const TabsConfig: TabConfig = {
   feedback: {
@@ -15,22 +16,12 @@ export const TabsConfig: TabConfig = {
   },
 };
 
-export type filterObject = {
-  label?: string | null;
-  selections: string[];
-  index: number;
-};
-
 function App() {
   const [selectedTab, setSelectedTab] = useState("feedback");
-  const [filterObjectArray, setFilterObjectArray] = useState<filterObject[]>([
-    { selections: [], index: 0 },
-  ]);
-
-  // TODO: Remove debug
-  useEffect(() => {
-    console.log("filterObjectArray in App.tsx:", filterObjectArray);
-  }, [filterObjectArray]);
+  const [filterObjectArray, setFilterObjectArray] = useState<filterObjectArray>(
+    [{ selections: [], index: 0, not: false }]
+  );
+  const [resultsCount, setResultsCount] = useState<number | null>(null);
 
   return (
     <div className="w-screen h-screen flex items-center justify-center">
@@ -49,12 +40,18 @@ function App() {
         <FilterMenu
           filterObjectArray={filterObjectArray}
           setFilterObjectArray={setFilterObjectArray}
+          resultsCount={resultsCount}
         />
         {selectedTab === "feedback" ? (
-          // TODO: pass filteObjectArray as filter
-          <Feedback filterObjectArray={filterObjectArray} />
+          <Feedback
+            filterObjectArray={filterObjectArray}
+            setResultsCount={setResultsCount}
+          />
         ) : (
-          <Groups filterObjectArray={filterObjectArray} />
+          <Groups
+            filterObjectArray={filterObjectArray}
+            setResultsCount={setResultsCount}
+          />
         )}
       </div>
     </div>

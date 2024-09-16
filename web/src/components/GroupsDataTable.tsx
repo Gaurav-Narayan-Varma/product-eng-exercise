@@ -1,6 +1,6 @@
 import cx from "classnames";
-import { useState } from "react";
-import { FeedbackGroup } from "../hooks";
+import { useEffect, useState } from "react";
+import { FeedbackGroup } from "../../shared/types";
 import { DataTable } from "./DataTable";
 
 const importanceValue = {
@@ -11,28 +11,39 @@ const importanceValue = {
 
 export function GroupsDataTable({ data }: { data: FeedbackGroup[] }) {
   const [selectedGroupIndex, setSelectedGroupIndex] = useState(0);
+  const [dataKey, setDataKey] = useState(0); // Add a key state
+
+  useEffect(() => {
+    // Update key to force re-render
+    setDataKey((prev) => prev + 1);
+  }, [data, selectedGroupIndex]);
 
   return (
     <div className=" hide-scroll-bar flex h-full w-full align-top">
       <div
-        className="hide-scroll-bar h-full overflow-y-auto "
+        className="hide-scroll-bar h-full overflow-y-auto border-[0.5px] border-gray-200"
         style={{ width: 500 }}
       >
         {data.map((group, index) => (
           <div
             key={`grouped-feedback-${index}`}
             onMouseDown={() => setSelectedGroupIndex(index)}
-            className={cx(" border-b px-6 py-4 hover:cursor-default", {
-              "bg-primary-action-light": selectedGroupIndex === index,
-              "hover:bg-hover-gray": selectedGroupIndex !== index,
-            })}
+            className={cx(
+              " border-b-[0.5px] border-gray-200 px-6 py-4 hover:cursor-default",
+              {
+                "bg-primary-action-light": selectedGroupIndex === index,
+                "hover:bg-hover-gray": selectedGroupIndex !== index,
+              }
+            )}
           >
             <div className="mb-2 text-base font-semibold">{group.name}</div>
+            <div className="text-sm text-gray-500">{group.description}</div>
           </div>
         ))}
       </div>
       <div className="bg-dusty-white w-full flex-1 p-4">
         <DataTable
+          key={dataKey} // Use the key to force re-render
           fullWidth
           data={(data[selectedGroupIndex]?.feedback ?? [])
             .sort(

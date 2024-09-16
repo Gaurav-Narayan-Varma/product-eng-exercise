@@ -1,24 +1,12 @@
 import bodyParser from "body-parser";
 import express, { Request, Response } from "express";
 import json from "./data.json";
-
-type Feedback = {
-  id: number;
-  name: string;
-  description: string;
-  importance: "High" | "Medium" | "Low";
-  type: "Sales" | "Customer" | "Research";
-  customer: "Loom" | "Ramp" | "Brex" | "Vanta" | "Notion" | "Linear" | "OpenAI";
-  date: string;
-};
-
-type FeedbackData = Feedback[];
-
-type filterObject = {
-  label?: string;
-  selections: string[];
-  index: number;
-};
+import {
+  FeedbackData,
+  FeedbackGroup,
+  filterObjectArray,
+} from "../../shared/types";
+import { groupFeedbackWithAI } from "./aiService";
 
 const daysMapping: Record<string, number> = {
   "1 day ago": 1,
@@ -40,80 +28,95 @@ function queryHandler(req: Request, res: Response<{ data: FeedbackData }>) {
   const { query } = req.body;
   const filterObjectArray = query.filterObjectArray;
 
-  console.log(
-    "filterObjectArray in endpoint before validation",
-    filterObjectArray
-  );
-
-  const validFilters = filterObjectArray.filter(
-    (filterObject: filterObject) => {
-      return filterObject.label !== undefined && filterObject.label !== "";
-    }
-  );
-
-  console.log("filterObjectArray in endpoint", filterObjectArray);
-
-  let filteredFeedback = feedback;
-
-  if (validFilters && validFilters.length > 0) {
-    filteredFeedback = feedback.filter((item) => {
-      return validFilters.every((filterObject: filterObject) => {
-        if (filterObject.label === "Importance") {
-          return filterObject.selections.includes(item.importance);
-        } else if (filterObject.label === "Type") {
-          return filterObject.selections.includes(item.type);
-        } else if (filterObject.label === "Customer") {
-          return filterObject.selections.includes(item.customer);
-        } else if (filterObject.label === "Content") {
-          return filterObject.selections.some(
-            (content) =>
-              item.description.toLowerCase().includes(content.toLowerCase()) ||
-              item.name.toLowerCase().includes(content.toLowerCase())
-          );
-        } else if (filterObject.label === "Created date") {
-          let dateLimit: Date;
-
-          if (!daysMapping.hasOwnProperty(filterObject.selections[0])) {
-            dateLimit = new Date(filterObject.selections[0]);
-          } else {
-            const now = new Date();
-            const daysAgo = daysMapping[filterObject.selections[0]];
-            dateLimit = new Date(now.setDate(now.getDate() - daysAgo));
-          }
-
-          return new Date(item.date) >= dateLimit;
-        }
-        return true;
-      });
-    });
-  }
-
-  console.log("filteredFeedback", filteredFeedback);
+  let filteredFeedback = filterFeedback(feedback, filterObjectArray);
 
   res.status(200).json({ data: filteredFeedback });
 }
 
-type FeedbackGroup = {
-  name: string;
-  feedback: Feedback[];
-};
+// In memory cache for grouping consistency
+// Would be replaced with a Redis cache in a production setting
+const feedbackCache: Record<string, FeedbackGroup[]> = {};
 
 async function groupHandler(
   req: Request,
   res: Response<{ data: FeedbackGroup[] }>
 ) {
-  const body = req;
+  const { query } = req.body;
+  const filterObjectArray = query.filterObjectArray;
+
+  const filteredFeedback = filterFeedback(feedback, filterObjectArray);
+
+  // Create a unique key for the filtered feedback
+  const cacheKey = JSON.stringify(filteredFeedback);
+
+  // Check if the result is already cached
+  if (feedbackCache[cacheKey]) {
+    return res.status(200).json({
+      data: feedbackCache[cacheKey],
+    });
+  }
 
   /**
    * TODO(part-2): Implement filtering + grouping
    */
+  const groupedFeedback = await groupFeedbackWithAI(filteredFeedback);
+
+  // Cache the result
+  feedbackCache[cacheKey] = groupedFeedback;
 
   res.status(200).json({
-    data: [
-      {
-        name: "All feedback",
-        feedback: feedback,
-      },
-    ],
+    data: groupedFeedback,
+  });
+}
+
+function filterFeedback(
+  feedback: FeedbackData,
+  filterObjectArray: filterObjectArray
+): FeedbackData {
+  const validFilters = filterObjectArray.filter((filterObject) => {
+    return filterObject.label !== undefined && filterObject.label !== "";
+  });
+
+  if (validFilters.length === 0) return feedback;
+
+  return feedback.filter((item) => {
+    return validFilters.every((filterObject) => {
+      const matches = (value: string) =>
+        filterObject.selections.includes(value);
+      const contentMatches = (content: string) =>
+        item.description.toLowerCase().includes(content.toLowerCase()) ||
+        item.name.toLowerCase().includes(content.toLowerCase());
+
+      if (filterObject.label === "Importance") {
+        return filterObject.not
+          ? !matches(item.importance)
+          : matches(item.importance);
+      } else if (filterObject.label === "Type") {
+        return filterObject.not ? !matches(item.type) : matches(item.type);
+      } else if (filterObject.label === "Customer") {
+        return filterObject.not
+          ? !matches(item.customer)
+          : matches(item.customer);
+      } else if (filterObject.label === "Content") {
+        return filterObject.not
+          ? !filterObject.selections.some(contentMatches)
+          : filterObject.selections.some(contentMatches);
+      } else if (filterObject.label === "Created date") {
+        let dateLimit: Date;
+
+        if (!daysMapping.hasOwnProperty(filterObject.selections[0])) {
+          dateLimit = new Date(filterObject.selections[0]);
+        } else {
+          const now = new Date();
+          const daysAgo = daysMapping[filterObject.selections[0]];
+          dateLimit = new Date(now.setDate(now.getDate() - daysAgo));
+        }
+
+        return filterObject.not
+          ? new Date(item.date) < dateLimit
+          : new Date(item.date) >= dateLimit;
+      }
+      return true;
+    });
   });
 }

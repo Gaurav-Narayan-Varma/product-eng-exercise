@@ -70,24 +70,14 @@ export const FilterMenuDropdown = ({
 }: Props) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  // const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    console.log("is this a filter?", isFilter);
-    console.log("isdropdown state changes:", isDropdownOpen);
-  }, [isDropdownOpen]);
 
   useEffect(() => {
     // When dropdown opens, focus on input
     if (isDropdownOpen) {
-      console.log("isDropdownOpen condition true hit");
       if (inputRef.current) {
         inputRef.current.focus();
       }
-      // setIsVisible(true);
     } else {
-      console.log("isDropdownOpen condition false hit");
-      // setIsVisible(false);
       setSelectedLabel(null);
       setSearchTerm("");
     }

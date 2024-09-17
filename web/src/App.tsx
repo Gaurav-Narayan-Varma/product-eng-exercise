@@ -23,10 +23,6 @@ function App() {
   );
   const [resultsCount, setResultsCount] = useState<number | null>(null);
 
-  // NEXT TODO: create filter object which makes requests to the backend - that way the same filter does not have to make two different calls to the backend just because it is represented as a different filterObjectArray each time
-
-  // NEXT TODO: implement this filter calculation in a custom hook called useFilter
-
   return (
     <div className="w-screen h-screen flex items-center justify-center">
       <div className="w-5/6 h-4/5 flex flex-col gap-y-3">

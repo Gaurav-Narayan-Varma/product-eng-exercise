@@ -70,17 +70,24 @@ export const FilterMenuDropdown = ({
 }: Props) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [isVisible, setIsVisible] = useState(false);
+  // const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    console.log("is this a filter?", isFilter);
+    console.log("isdropdown state changes:", isDropdownOpen);
+  }, [isDropdownOpen]);
 
   useEffect(() => {
     // When dropdown opens, focus on input
     if (isDropdownOpen) {
+      console.log("isDropdownOpen condition true hit");
       if (inputRef.current) {
         inputRef.current.focus();
       }
-      setIsVisible(true);
+      // setIsVisible(true);
     } else {
-      setIsVisible(false);
+      console.log("isDropdownOpen condition false hit");
+      // setIsVisible(false);
       setSelectedLabel(null);
       setSearchTerm("");
     }
@@ -181,7 +188,7 @@ export const FilterMenuDropdown = ({
       className={`absolute top-0 ${
         selectedLabel && "top-7"
       } left-0 w-[240px] bg-white border-[0.5px] border-gray-200 rounded-lg shadow-lg z-50 transition-all duration-300 ease-in-out ${
-        isVisible
+        isDropdownOpen
           ? "opacity-100 transform translate-y-0"
           : "opacity-0 transform -translate-y-2"
       }`}

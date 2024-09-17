@@ -5,10 +5,10 @@ import { HiOutlineUser } from "react-icons/hi";
 import { PiTextTBold } from "react-icons/pi";
 import { HiCalendar } from "react-icons/hi2";
 import { IconType } from "react-icons";
-import { filterObjectArray } from "../../shared/types";
+import { filterObjectArray } from "../../../shared/types";
 
 type DropdownItems = {
-  string: {
+  [key: string]: {
     Icon: IconType;
     selections?: string[];
   };
@@ -51,8 +51,8 @@ interface Props {
   setFilterObjectArray: React.Dispatch<React.SetStateAction<filterObjectArray>>;
   isLast: boolean;
   isFilter: boolean;
-  selectedLabel: string;
-  setSelectedLabel: React.Dispatch<React.SetStateAction<string>>;
+  selectedLabel: string | null;
+  setSelectedLabel: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
 export const FilterMenuDropdown = ({
@@ -109,6 +109,7 @@ export const FilterMenuDropdown = ({
           },
           {
             selections: [],
+            not: false,
             index: prev.length === 0 ? 0 : prev[prev.length - 1].index + 1,
           },
         ];
@@ -148,7 +149,7 @@ export const FilterMenuDropdown = ({
       }
       return acc;
     },
-    {} as Record<string, DropdownItem>
+    {} as DropdownItems
   );
 
   const filteredSelections =

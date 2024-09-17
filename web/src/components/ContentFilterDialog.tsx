@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from "../components/ui/dialog";
 import { Button } from "../components/ui/button";
-import { filterObjectArray } from "../../shared/types";
+import { filterObjectArray } from "../../../shared/types";
 import { useEffect } from "react";
 
 type Props = {
@@ -74,6 +74,7 @@ export function ContentFilterDialog({
         },
         {
           selections: [],
+          not: false,
           index: prev.length === 0 ? 0 : prev[prev.length - 1].index + 1,
         },
       ];

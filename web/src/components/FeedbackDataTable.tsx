@@ -1,5 +1,5 @@
 import { DataTable } from "./DataTable";
-import { FeedbackData } from "../hooks";
+import { FeedbackData } from "../../../shared/types";
 
 export function FeedbackDataTable({ data }: { data: FeedbackData }) {
   return (

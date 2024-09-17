@@ -8,7 +8,7 @@ import {
 } from "../components/ui/dialog";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
-import { filterObjectArray } from "../../shared/types";
+import { filterObjectArray } from "../../../shared/types";
 
 type Props = {
   isDatePickerOpen: boolean;
@@ -46,6 +46,7 @@ export function DatePickerDialog({
         },
         {
           selections: [],
+          not: false,
           index: prev.length === 0 ? 0 : prev[prev.length - 1].index + 1,
         },
       ];
@@ -63,8 +64,7 @@ export function DatePickerDialog({
           </DialogTitle>
           <Calendar
             mode="single"
-            selected={date}
-            //   onSelect={setDate}
+            selected={date || undefined}
             onDayClick={(day) => {
               setDate(day);
               setIsDateSelected(true);

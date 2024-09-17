@@ -1,7 +1,7 @@
 import { HiPlus } from "react-icons/hi";
 import { MdOutlineBlock } from "react-icons/md";
 import { useState } from "react";
-import { filterObjectArray } from "../../shared/types";
+import { filterObjectArray } from "../../../shared/types";
 
 type Props = {
   notDropdownRef: (el: HTMLDivElement | null) => void;
@@ -9,7 +9,6 @@ type Props = {
   setIsNotDropdownOpen: React.Dispatch<React.SetStateAction<boolean>>;
   selectedIndex: number | null;
   filterObjectIndex: number;
-  filterObjectArray: filterObjectArray;
   setFilterObjectArray: React.Dispatch<React.SetStateAction<filterObjectArray>>;
 };
 
@@ -17,7 +16,6 @@ export function NotDropdown({
   isNotDropdownOpen,
   setIsNotDropdownOpen,
   selectedIndex,
-  filterObjectArray,
   filterObjectIndex,
   setFilterObjectArray,
   notDropdownRef,

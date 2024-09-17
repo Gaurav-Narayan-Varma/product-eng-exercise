@@ -27,7 +27,7 @@ export function FilterMenu({
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [contentFilterValue, setContentFilterValue] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [date, setDate] = useState<Date | null>(new Date());
   const [isDateSelected, setIsDateSelected] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
@@ -86,7 +86,7 @@ export function FilterMenu({
     );
   };
 
-  const handleNotClick = (filterObjectIndex) => {
+  const handleNotClick = (filterObjectIndex: number) => {
     setIsNotDropdownOpen((prev) => !prev);
     setSelectedIndex(filterObjectIndex);
   };
@@ -125,7 +125,6 @@ export function FilterMenu({
                 isNotDropdownOpen={isNotDropdownOpen}
                 setIsNotDropdownOpen={setIsNotDropdownOpen}
                 selectedIndex={selectedIndex}
-                filterObjectArray={filterObjectArray}
                 setFilterObjectArray={setFilterObjectArray}
               />
             </div>

@@ -25,8 +25,7 @@ router.post("/groups", groupHandler);
 const feedback: FeedbackData = json as any;
 
 function queryHandler(req: Request, res: Response<{ data: FeedbackData }>) {
-  const { query } = req.body;
-  const filterObjectArray: filterObjectArray = query.filterObjectArray;
+  let filterObjectArray: filterObjectArray = req.body.query;
 
   let filteredFeedback = filterFeedback(feedback, filterObjectArray);
 
@@ -41,8 +40,7 @@ async function groupHandler(
   req: Request,
   res: Response<{ data: FeedbackGroup[] }>
 ) {
-  const { query } = req.body;
-  const filterObjectArray = query.filterObjectArray;
+  const filterObjectArray = req.body.query;
 
   const filteredFeedback = filterFeedback(feedback, filterObjectArray);
 

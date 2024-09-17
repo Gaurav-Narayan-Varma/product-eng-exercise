@@ -9,9 +9,7 @@ type Props = {
 };
 
 export function Feedback({ filterObjectArray, setResultsCount }: Props) {
-  const { data: feedbackData, isLoading } = useFeedbackQuery({
-    filterObjectArray,
-  });
+  const { data: feedbackData, isLoading } = useFeedbackQuery(filterObjectArray);
 
   useEffect(() => {
     if (feedbackData) {

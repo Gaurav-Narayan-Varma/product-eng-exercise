@@ -1,6 +1,6 @@
 import cx from "classnames";
 import { useEffect, useState } from "react";
-import { FeedbackGroup } from "../../shared/types";
+import { FeedbackGroup } from "../../../shared/types";
 import { DataTable } from "./DataTable";
 
 const importanceValue = {

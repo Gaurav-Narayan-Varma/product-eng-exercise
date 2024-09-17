@@ -4,7 +4,6 @@ import {
   FeedbackGroup,
   filterObjectArray,
 } from "../../shared/types";
-import { filterObjectArray } from "../../shared/types";
 
 export function useFeedbackQuery(query: filterObjectArray) {
   return useQuery<{ data: FeedbackData }>({
@@ -22,6 +21,8 @@ export function useFeedbackQuery(query: filterObjectArray) {
     // The query key is used to cache responses and should represent
     // the parameters of the query.
     queryKey: [query],
+    // TODO: remove this
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -40,5 +41,7 @@ export function useGroupsQuery(query: filterObjectArray) {
     // The query key is used to cache responses and should represent
     // the parameters of the query.
     queryKey: [query],
+    // TODO: remove this
+    refetchOnWindowFocus: false,
   });
 }

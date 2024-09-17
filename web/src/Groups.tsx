@@ -9,9 +9,7 @@ type Props = {
 };
 
 export function Groups({ filterObjectArray, setResultsCount }: Props) {
-  const dataReq = useGroupsQuery({
-    filterObjectArray,
-  });
+  const dataReq = useGroupsQuery(filterObjectArray);
 
   useEffect(() => {
     if (dataReq.data?.data) {

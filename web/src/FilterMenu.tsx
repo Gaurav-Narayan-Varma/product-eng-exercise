@@ -32,6 +32,16 @@ export function FilterMenu({
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
 
+  // TODO
+  useEffect(() => {
+    console.log("FOA:", filterObjectArray);
+  }, [filterObjectArray]);
+
+  // TODO
+  useEffect(() => {
+    console.log("IDDO:", isDropdownOpen);
+  }, [isDropdownOpen]);
+
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       // If the click is outside filterMenuDropdown...

@@ -218,7 +218,6 @@ export const FilterMenuDropdown = ({
                         filterObjectArray.length - 1
                       ].selections.includes(selection)
                     }
-                    onChange={() => {}}
                   />
                 )}
                 {selection}

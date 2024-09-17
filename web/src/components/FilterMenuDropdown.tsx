@@ -50,7 +50,7 @@ interface Props {
   filterObjectArray: filterObjectArray;
   setFilterObjectArray: React.Dispatch<React.SetStateAction<filterObjectArray>>;
   isLast: boolean;
-  pillNumber: number | null;
+  isFilter: boolean;
   selectedLabel: string;
   setSelectedLabel: React.Dispatch<React.SetStateAction<string>>;
 }
@@ -64,7 +64,7 @@ export const FilterMenuDropdown = ({
   filterObjectArray,
   setFilterObjectArray,
   isLast,
-  pillNumber,
+  isFilter,
   selectedLabel,
   setSelectedLabel,
 }: Props) => {
@@ -161,17 +161,17 @@ export const FilterMenuDropdown = ({
         )
       : [];
 
-  if (!isDropdownOpen) {
-    return null;
-  }
+  const shouldShowDropdown = () => {
+    // SelectionMode: when the user is actively modifying the latest filter
+    const isSelectionMode = filterObjectArray.at(-1)?.label !== undefined;
 
-  // If in selection mode then attach to last pill
-  if (filterObjectArray.at(-1).selections.length > 0 && !isLast) {
-    return null;
-  }
+    return (
+      isDropdownOpen &&
+      ((isLast && isSelectionMode) || (isFilter && !isSelectionMode))
+    );
+  };
 
-  // If not in selection mode then attach to funnel
-  if (filterObjectArray.at(-1).selections.length === 0 && pillNumber + 1 > 0) {
+  if (!shouldShowDropdown()) {
     return null;
   }
 

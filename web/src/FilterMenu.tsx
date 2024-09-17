@@ -42,11 +42,11 @@ export function FilterMenu({
         // Close dropdown
         setIsDropdownOpen(false);
 
-        // If filter object has selections, then keep it and create a new one
+        // If filter object has a LABEL, then keep it and create a new one
         const currentFilterObject =
           filterObjectArray[filterObjectArray.length - 1];
 
-        if (currentFilterObject.selections.length > 0) {
+        if (currentFilterObject.label !== undefined) {
           setFilterObjectArray((prevArray) => [
             ...prevArray,
             {
@@ -140,6 +140,7 @@ export function FilterMenu({
             >
               <HiOutlineX className="h-[14px] w-[14px]" />
             </div>
+            {/* Dropdown for pill */}
             <FilterMenuDropdown
               filterMenuDropdownRef={filterMenuDropdownRef}
               isDropdownOpen={isDropdownOpen}
@@ -149,7 +150,7 @@ export function FilterMenu({
               filterObjectArray={filterObjectArray}
               setFilterObjectArray={setFilterObjectArray}
               isLast={i === arr.length - 1}
-              pillNumber={i}
+              isFilter={false}
               selectedLabel={selectedLabel}
               setSelectedLabel={setSelectedLabel}
             />
@@ -169,6 +170,7 @@ export function FilterMenu({
               <span className="text-xs font-semibold">Filter</span>
             )}
         </button>
+        {/* Dropdown for filter button */}
         <FilterMenuDropdown
           filterMenuDropdownRef={filterMenuDropdownRef}
           isDropdownOpen={isDropdownOpen}
@@ -177,6 +179,8 @@ export function FilterMenu({
           setIsDatePickerOpen={setIsDatePickerOpen}
           filterObjectArray={filterObjectArray}
           setFilterObjectArray={setFilterObjectArray}
+          isLast={false}
+          isFilter={true}
           selectedLabel={selectedLabel}
           setSelectedLabel={setSelectedLabel}
         />

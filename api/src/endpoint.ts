@@ -26,7 +26,7 @@ const feedback: FeedbackData = json as any;
 
 function queryHandler(req: Request, res: Response<{ data: FeedbackData }>) {
   const { query } = req.body;
-  const filterObjectArray = query.filterObjectArray;
+  const filterObjectArray: filterObjectArray = query.filterObjectArray;
 
   let filteredFeedback = filterFeedback(feedback, filterObjectArray);
 
